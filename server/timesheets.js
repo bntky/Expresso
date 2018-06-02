@@ -6,9 +6,10 @@ const {
 
 timesheetsRouter.get('/', (req, res, next) => {
     const where = `employee_id = ${req.employeeId}`;
-    getAll('Timesheet', where, timesheets => {
-        return res.status(200).send({timesheets});
-    }, res);
+    getAll('Timesheet', where,
+           timesheets => res.status(200).send({timesheets}),
+           error =>
+           res.status(500).send(`ERROR: Failed to get timesheets: ${error}`));
 });
 
 const isValidTimesheet = timesheet => ['hours', 'rate', 'date']
@@ -25,9 +26,13 @@ timesheetsRouter.post('/', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for timesheet`);
     }
 
-    const vars = dbTimesheetVars(req.body.timesheet);
-    vars.$employee_id = req.employeeId;
-    insertNew('Timesheet', vars, res);
+    const timesheetData = dbTimesheetVars(req.body.timesheet);
+    timesheetData.$employee_id = req.employeeId;
+    insertNew('Timesheet', timesheetData,
+              timesheet => res.status(201).send({timesheet}), 
+              error =>
+              res.status(500).send(
+                  `ERROR: Failed to insert new timesheet: ${error}`));
 });
 
 timesheetsRouter.param('timesheetId', (req, res, next, timesheetId) => {
@@ -50,14 +55,24 @@ timesheetsRouter.put('/:timesheetId', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for timesheet`);
     }
 
-    let timesheet = dbTimesheetVars(req.body.timesheet);
-    timesheet.$id = req.timesheetId;
-    timesheet.$employee_id = req.employeeId;
-    updateItem('Timesheet', timesheet, res);
+    let timesheetData = dbTimesheetVars(req.body.timesheet);
+    timesheetData.$id = req.timesheetId;
+    timesheetData.$employee_id = req.employeeId;
+    updateItem('Timesheet', timesheetData,
+               timesheet => res.status(200).send({timesheet}),
+               error =>
+               res.status(500).send(
+                   `ERROR: Failed to update timesheet with ID, ` +
+                       `${req.timesheetId}: ${error}`));
 });
 
 timesheetsRouter.delete('/:timesheetId', (req, res, next) => {
-    deleteItem('Timesheet', req.timesheetId, res);
+    deleteItem('Timesheet', req.timesheetId, () =>
+               res.status(204)
+               .send(`Timesheet with ID, ${req.timesheetId}, deleted`),
+               error =>
+               res.status(500).send(
+                   `ERROR: Failed to delete timesheet: ${error}`));
 });
 
 module.exports = timesheetsRouter;

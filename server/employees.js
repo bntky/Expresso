@@ -7,9 +7,10 @@ const {
 
 employeesRouter.get('/', (req, res, next) => {
     const where = 'is_current_employee = 1';
-    getAll('Employee', where, employees => {
-        return res.status(200).send({employees});
-    }, res);
+    getAll('Employee', where,
+           employees => res.status(200).send({employees}),
+           error =>
+           res.status(500).send(`ERROR: Failed to get employees: ${error}`));
 });
 
 const isValidEmployee = employee => ['name', 'position', 'wage']
@@ -27,7 +28,11 @@ employeesRouter.post('/', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for employee`);
     }
 
-    insertNew('Employee', dbEmplVars(req.body.employee), res);
+    insertNew('Employee', dbEmplVars(req.body.employee),
+              employee => res.status(201).send({employee}), 
+              error =>
+              res.status(500).send(
+                  `ERROR: Failed to insert new employee: ${error}`));
 });
 
 employeesRouter.param('employeeId', (req, res, next, employeeId) => {
@@ -54,13 +59,22 @@ employeesRouter.put('/:employeeId', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for employee`);
     }
 
-    let employee = dbEmplVars(req.body.employee);
-    employee.$id = req.employeeId;
-    updateItem('Employee', employee, res);
+    let employeeData = dbEmplVars(req.body.employee);
+    employeeData.$id = req.employeeId;
+    updateItem('Employee', employeeData,
+               employee => res.status(200).send({employee}),
+               error =>
+               res.status(500).send(
+                   `ERROR: Failed to update employee with ID, ` +
+                       `${req.employeeId}: ${error}`));
 });
 
 employeesRouter.delete('/:employeeId', (req, res, next) => {
-    deleteItem('Employee', req.employeeId, res);
+    deleteItem('Employee', req.employeeId,
+               employee => res.status(200).send({employee}),
+               error =>
+               res.status(500).send(
+                   `ERROR: Failed to delete employee: ${error}`));
 });
 
 employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);
