@@ -12,7 +12,8 @@ menuItemsRouter.get('/', (req, res, next) => {
            error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
-const isValidMenuItem = menuItem => ['name', 'description', 'inventory', 'price']
+const isValidMenuItem = menuItem =>
+      ['name', 'description', 'inventory', 'price']
       .every(menuItem.hasOwnProperty.bind(menuItem));
 
 const dbMenuItemVars = menuItem => { return {

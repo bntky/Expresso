@@ -7,10 +7,10 @@ const {
 
 employeesRouter.get('/', (req, res, next) => {
     const where = 'is_current_employee = 1';
+    const errMsg = `ERROR: Failed to get employees`;
     getAll('Employee', where,
            employees => res.status(200).send({employees}),
-           error =>
-           res.status(500).send(`ERROR: Failed to get employees: ${error}`));
+           error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 const isValidEmployee = employee => ['name', 'position', 'wage']
@@ -28,11 +28,10 @@ employeesRouter.post('/', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for employee`);
     }
 
+    const errMsg = `ERROR: Failed to insert new employee`;
     insertNew('Employee', dbEmplVars(req.body.employee),
               employee => res.status(201).send({employee}), 
-              error =>
-              res.status(500).send(
-                  `ERROR: Failed to insert new employee: ${error}`));
+              error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 employeesRouter.param('employeeId', (req, res, next, employeeId) => {
@@ -45,7 +44,8 @@ employeesRouter.param('employeeId', (req, res, next, employeeId) => {
 
 employeesRouter.param('employeeId', (req, res, next, employeeId) => {
     if( ! req.employee ) {
-        return res.status(404).send(`ERROR: No employee found with id: ${req.employeeId}`);
+        const errMsg = `ERROR: No employee found with id: ${req.employeeId}`;
+        return res.status(404).send(`${errMsg}`);
     }
     next();
 });

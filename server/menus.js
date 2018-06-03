@@ -6,9 +6,9 @@ const {
 } = require('./db-utils');
 
 menusRouter.get('/', (req, res, next) => {
+    const errMsg = `ERROR: Failed to get menus`;
     getAll('Menu', '', menus => res.status(200).send({menus}),
-           error =>
-           res.status(500).send(`ERROR: Failed to get menus: ${error}`));
+           error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 const isValidMenu = menu => ['title'].every(menu.hasOwnProperty.bind(menu));
@@ -22,11 +22,10 @@ menusRouter.post('/', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for menu`);
     }
 
+    const errMsg = `ERROR: Failed to insert new menu`;
     insertNew('Menu', dbMenuVars(req.body.menu),
               menu => res.status(201).send({menu}), 
-              error => 
-              res.status(500).send(
-                  `ERROR: Failed to insert new menu: ${error}`));
+              error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 menusRouter.param('menuId', (req, res, next, menuId) => {
@@ -39,7 +38,8 @@ menusRouter.param('menuId', (req, res, next, menuId) => {
 
 menusRouter.param('menuId', (req, res, next, menuId) => {
     if( ! req.menu ) {
-        return res.status(404).send(`ERROR: No menu found with id: ${req.menuId}`);
+        const errMsg = `ERROR: No menu found with id: ${req.menuId}`;
+        return res.status(404).send(`${errMsg}`);
     }
     next();
 });
@@ -53,30 +53,27 @@ menusRouter.put('/:menuId', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for menu`);
     }
 
+    const errMsg = `ERROR: Failed to update menu with ID, ${req.menuId}`;
     let menuData = dbMenuVars(req.body.menu);
     menuData.$id = req.menuId;
     updateItem('Menu', menuData,
                menu => res.status(200).send({menu}),
-               error =>
-               res.status(500).send(
-                   `ERROR: Failed to update menu with ID, ` +
-                       `${req.menuId}: ${error}`));
+               error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 menusRouter.delete('/:menuId', (req, res, next) => {
+    const errMsg2 = `ERROR: Failed to count menu items for ${req.menuId}`;
     countMenuItemsOnMenu(req.menuId, count => {
         if( count > 0 ) {
-            return res.status(400)
-                .send(`Menu, ${req.menuId}, still has ${count} menu items`);
+            const errMsg = `Menu, ${req.menuId}, has ${count} menu items`;
+            return res.status(400).send(`${errMsg}`);
         }
+        const errMsg1 = `ERROR: Failed to delete menu`;
+        const deletedMsg = `Menu with ID, ${req.menuId}, deleted`;
         deleteItem('Menu', req.menuId,
-                   menu => res.status(204)
-                   .send(`Menu with ID, ${req.menuId}, deleted`),
-                   error => 
-                   res.status(500).send(
-                       `ERROR: Failed to delete menu: ${error}`));
-    }, error => res.status(500).send(
-        `ERROR: Failed to count menu items for ${req.menuId}: ${error}`));
+                   menu => res.status(204).send(`${deletedMsg}`),
+                   error => res.status(500).send(`${errMsg1}: ${error}`));
+    }, error => res.status(500).send(`${errMsg2}: ${error}`));
 });
 
 menusRouter.use('/:menuId/menu-items', menuItemsRouter);
