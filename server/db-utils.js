@@ -27,7 +27,8 @@ const getAll = (table, where, callback, errCallback) => {
 
 const tableColumns = {
     Employee: ['name', 'position', 'wage', 'is_current_employee'],
-    Timesheet: ['hours', 'rate', 'date', 'employee_id']
+    Timesheet: ['hours', 'rate', 'date', 'employee_id'],
+    Menu: ['title']
 };
 
 const insertNew = (table, item, callback, errCallback) => {
@@ -73,4 +74,17 @@ const deleteItem = (table, id, callback, errCallback) => {
     });
 };
 
-module.exports = {getOne, getAll, insertNew, updateItem, deleteItem};
+const countMenuItemsOnMenu = (menuId, callback, errCallback) => {
+    const menuItemsSQL = `SELECT COUNT(*) as count FROM MenuItem ` +
+          `WHERE menu_id = $menuId`;
+
+    db.get(menuItemsSQL, {$menuId: menuId}, (error, row) => {
+        if(error) {
+            return errCallback(error);
+        }
+        return callback(row.count);
+    });
+};
+
+module.exports = {getOne, getAll, insertNew, updateItem, deleteItem,
+                  countMenuItemsOnMenu};
