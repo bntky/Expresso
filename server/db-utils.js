@@ -21,7 +21,7 @@ const getAll = (table, where, callback, errCallback) => {
         if( error ) {
             return errCallback(error);
         }
-        return callback(rows, error);
+        return callback(rows);
     });
 };
 
