@@ -59,22 +59,21 @@ employeesRouter.put('/:employeeId', (req, res, next) => {
         return res.status(400).send(`ERROR: Missing fields for employee`);
     }
 
+    const errMsg = `ERROR: Failed to update employee with ID, ` +
+          `${req.employeeId}`;
     let employeeData = dbEmplVars(req.body.employee);
     employeeData.$id = req.employeeId;
     updateItem('Employee', employeeData,
                employee => res.status(200).send({employee}),
-               error =>
-               res.status(500).send(
-                   `ERROR: Failed to update employee with ID, ` +
-                       `${req.employeeId}: ${error}`));
+               error => res.status(500).send(`${errMsg}: ${error}`));
 });
 
 employeesRouter.delete('/:employeeId', (req, res, next) => {
-    deleteItem('Employee', req.employeeId,
+    const errMsg = `ERROR: Failed to delete employee`;
+    updateItem('Employee', {$id: req.employeeId, $is_current_employee: 0},
                employee => res.status(200).send({employee}),
-               error =>
-               res.status(500).send(
-                   `ERROR: Failed to delete employee: ${error}`));
+               error => res.status(500).send(`${errMsg}: ${error}`),
+               ['is_current_employee']);
 });
 
 employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);

@@ -61,12 +61,6 @@ const updateItem = (table, item, callback, errCallback, columns) => {
 const deleteItem = (table, id, callback, errCallback) => {
     const deleteSQL = `DELETE FROM ${table} WHERE id = $id`;
 
-    if( table === 'Employee' ) {
-        updateItem('Employee', {$id: id, $is_current_employee: 0}, callback,
-                   errCallback, ['is_current_employee']);
-        return;
-    }
-    
     db.run(deleteSQL, {$id: id}, function(error) {
         if(error) {
             return errCallback(error);
