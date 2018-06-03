@@ -28,7 +28,8 @@ const getAll = (table, where, callback, errCallback) => {
 const tableColumns = {
     Employee: ['name', 'position', 'wage', 'is_current_employee'],
     Timesheet: ['hours', 'rate', 'date', 'employee_id'],
-    Menu: ['title']
+    Menu: ['title'],
+    MenuItem: ['name', 'description', 'inventory', 'price', 'menu_id']
 };
 
 const insertNew = (table, item, callback, errCallback) => {

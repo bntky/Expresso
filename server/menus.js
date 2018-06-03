@@ -1,5 +1,6 @@
 const express = require('express');
 const menusRouter = express.Router();
+const menuItemsRouter = require('./menu-items');
 const {
     getOne, getAll, insertNew, updateItem, deleteItem, countMenuItemsOnMenu
 } = require('./db-utils');
@@ -77,5 +78,7 @@ menusRouter.delete('/:menuId', (req, res, next) => {
     }, error => res.status(500).send(
         `ERROR: Failed to count menu items for ${req.menuId}: ${error}`));
 });
+
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);
 
 module.exports = menusRouter;
