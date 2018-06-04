@@ -3,6 +3,10 @@ const sqlite3 = require('sqlite3');
 const db = new sqlite3.Database(
     process.env.TEST_DATABASE || './database.sqlite');
 
+// Get one item from a table in the database with the given ID
+// Run the callback function with the found item as it's first
+// argument.  If an error occurs, run the errCallback function
+// with the given error.
 const getOne = (table, id, callback, errCallback) => {
     const query = 'SELECT * FROM ' + table + ' WHERE id = $id';
 
@@ -14,6 +18,10 @@ const getOne = (table, id, callback, errCallback) => {
     });
 };
 
+// Get all the items in a table in the database limited by the
+// where clause given by "where".  Run the callback function
+// passing the rows found as an array in the first argument.  If
+// an error occurs, call errCallback with the error.
 const getAll = (table, where, callback, errCallback) => {
     where = ! where ? '' : ` WHERE ${where}`;
     const sql = `SELECT * FROM ${table}${where}`;
@@ -25,6 +33,7 @@ const getAll = (table, where, callback, errCallback) => {
     });
 };
 
+// An object mapping the table names to their columns
 const tableColumns = {
     Employee: ['name', 'position', 'wage', 'is_current_employee'],
     Timesheet: ['hours', 'rate', 'date', 'employee_id'],
@@ -32,6 +41,13 @@ const tableColumns = {
     MenuItem: ['name', 'description', 'inventory', 'price', 'menu_id']
 };
 
+
+// Insert a new item into the database for the given table.  The item
+// should be an object with keys prefixed with a dollar sign ($) and
+// named after the column.  The primary key should not be included.
+// The callback function will be run if the insert is successful.  The
+// first argument to it will be the inserted item.  If an error
+// occurs, it will run the errCallback function with the error.
 const insertNew = (table, item, callback, errCallback) => {
     const columns = tableColumns[table].join(', ');
     const values = tableColumns[table].map(c => '$' + c).join(', ');
@@ -45,6 +61,14 @@ const insertNew = (table, item, callback, errCallback) => {
     });
 };
 
+// Update an item in the database for the given table.  The item
+// should be similar to the item in the insertNew function.  However,
+// it must, also, include the primary key as "$id" for the item to be
+// modified.  The callback function will be run if the update is
+// successful.  The first argument to it will be the updated item.  If
+// an error occurs, it will run the errCallback function with the
+// error.  If the columns argument is given, then only update those
+// columns for the item.
 const updateItem = (table, item, callback, errCallback, columns) => {
     columns = columns ? columns : tableColumns[table];
     const items = columns.map(c => `${c} = $${c}`).join(', ');
@@ -58,6 +82,10 @@ const updateItem = (table, item, callback, errCallback, columns) => {
     });
 };
 
+// Delete an item in the database for the given table with the given
+// id.  If no error occurs, then run the callback function with no
+// arguments.  If an error occurs, run the errCallback with the given
+// error.
 const deleteItem = (table, id, callback, errCallback) => {
     const deleteSQL = `DELETE FROM ${table} WHERE id = $id`;
 
@@ -69,6 +97,10 @@ const deleteItem = (table, id, callback, errCallback) => {
     });
 };
 
+// Count the number of menu items for the given menu in the
+// database. If the query is successful, then run the callback
+// function with the number of menu items found.  If an error occurs,
+// then run the errCallback with the given error.
 const countMenuItemsOnMenu = (menuId, callback, errCallback) => {
     const menuItemsSQL = `SELECT COUNT(*) as count FROM MenuItem ` +
           `WHERE menu_id = $menuId`;
